@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-background text-textMain antialiased;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Accessibility enhancements */
+.btn-large {
+  @apply px-8 py-4 text-xl font-semibold rounded-2xl shadow-md transition-all transform active:scale-95;
+}
+
+.card {
+  @apply bg-surface p-8 rounded-3xl shadow-card border border-gray-100;
+}
+
+.input-field {
+  @apply w-full p-4 rounded-xl border-2 border-gray-200 text-xl focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-colors;
+}
+
+.page-title {
+  @apply text-4xl font-bold text-primary mb-8;
+}
