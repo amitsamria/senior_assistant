@@ -4,10 +4,15 @@ from routes import router
 from database import engine, Base
 import db_models
 
-# Create tables
+# Create tables on startup
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Senior Assistant API", description="Backend for Senior Assistant Application")
+
+# Health check endpoint for Cloud Run
+@app.get("/healthz")
+def health_check():
+    return {"status": "healthy"}
 
 # CORS Setup
 origins = [

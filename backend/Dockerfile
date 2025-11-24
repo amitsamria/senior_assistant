@@ -13,8 +13,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Create static directory for frontend
-RUN mkdir -p static
+# Note: static directory should be populated with frontend build before Docker build
+# Run: cd ../frontend && npm run build && xcopy dist ..\backend\static /E /I /Y
 
 # Expose port 8000
 EXPOSE 8000
