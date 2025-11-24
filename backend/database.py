@@ -1,13 +1,11 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-
 import os
 
-if os.getenv("K_SERVICE"):
-    SQLALCHEMY_DATABASE_URL = "sqlite:////tmp/senior_assistant.db"
-else:
-    SQLALCHEMY_DATABASE_URL = "sqlite:///./senior_assistant.db"
+# Use /tmp for ephemeral storage in Cloud Run, or local path for development
+DB_PATH = os.getenv("DB_PATH", "senior_assistant.db")
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH}"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}

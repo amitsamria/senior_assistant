@@ -19,8 +19,9 @@ RUN mkdir -p static
 # Expose port 8000
 EXPOSE 8000
 
-# Set environment variable for port
+# Set environment variables
 ENV PORT=8000
+ENV DB_PATH=/tmp/senior_assistant.db
 
 # Run the application
 CMD exec uvicorn main:app --host 0.0.0.0 --port ${PORT}
