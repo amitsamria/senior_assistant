@@ -59,3 +59,14 @@ class HealthInfo(BaseModel):
 
     class Config:
         from_attributes = True
+
+class User(BaseModel):
+    id: int
+    username: str
+
+    class Config:
+        from_attributes = True
+
+class UserLogin(BaseModel):
+    username: str
+    password: str

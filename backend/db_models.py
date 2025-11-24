@@ -47,3 +47,17 @@ class HealthInfoDB(Base):
     conditions = Column(JSON)
     insurance_provider = Column(String)
     policy_number = Column(String)
+
+class CognitiveScoreDB(Base):
+    __tablename__ = "cognitive_scores"
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(String) # ISO format YYYY-MM-DD
+    score = Column(Integer)
+    total_attempts = Column(Integer)
+    game_type = Column(String, default='memory')
+
+class UserDB(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True)
+    password_hash = Column(String)

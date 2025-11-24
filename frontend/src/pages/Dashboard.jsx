@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
+    const username = localStorage.getItem('username') || 'Guest';
+    const displayName = username.split('@')[0]; // Get name before @ for emails
+
     const actions = [
         { to: '/clock', label: 'Day Hub', sub: 'Clock & Reminders', color: 'bg-teal-100 text-teal-800 border-teal-200' },
         { to: '/medicines', label: 'Medicines', sub: 'Check your pills', color: 'bg-blue-100 text-blue-800 border-blue-200' },
@@ -12,20 +15,20 @@ const Dashboard = () => {
 
     return (
         <div className="space-y-10">
-            <header className="text-center py-8">
-                <h1 className="text-5xl font-bold text-primary mb-4">Good Morning!</h1>
-                <p className="text-2xl text-secondary">What would you like to do today?</p>
+            <header className="text-center py-4 md:py-8">
+                <h1 className="text-4xl md:text-5xl font-bold text-primary mb-2 md:mb-4">Welcome, {displayName}!</h1>
+                <p className="text-xl md:text-2xl text-secondary">What would you like to do today?</p>
             </header>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
                 {actions.map((action) => (
                     <Link
                         key={action.to}
                         to={action.to}
-                        className={`card group hover:shadow-xl transition-all transform hover:-translate-y-2 border-2 ${action.color} flex flex-col items-center justify-center text-center h-64`}
+                        className={`card group hover:shadow-xl transition-all transform hover:-translate-y-2 border-2 ${action.color} flex flex-col items-center justify-center text-center h-48 md:h-64`}
                     >
-                        <span className="text-4xl font-bold mb-2 group-hover:scale-110 transition-transform">{action.label}</span>
-                        <span className="text-xl opacity-80">{action.sub}</span>
+                        <span className="text-3xl md:text-4xl font-bold mb-2 group-hover:scale-110 transition-transform">{action.label}</span>
+                        <span className="text-lg md:text-xl opacity-80">{action.sub}</span>
                     </Link>
                 ))}
             </div>

@@ -23,9 +23,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(router)
+app.include_router(router, prefix="/api")
 
-@app.get("/api/health")
+@app.get("/healthz")
 def health_check():
     return {"status": "ok"}
 
@@ -35,18 +35,26 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 # Mount static directory if it exists (Docker/Production)
-if os.path.exists("static"):
-    app.mount("/assets", StaticFiles(directory="static/assets"), name="assets")
+static_dir = "static"
+if os.path.exists(static_dir):
+    app.mount("/assets", StaticFiles(directory=os.path.join(static_dir, "assets")), name="assets")
 
     # Catch-all for SPA routing
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
+        # Skip API routes
         if full_path.startswith("api"):
             return {"error": "API endpoint not found"}
         
-        file_path = f"static/{full_path}"
+        # Try to serve specific file
+        file_path = os.path.join(static_dir, full_path)
         if os.path.exists(file_path) and os.path.isfile(file_path):
             return FileResponse(file_path)
         
-        return FileResponse("static/index.html")
+        # Default to index.html for SPA routes
+        index_path = os.path.join(static_dir, "index.html")
+        if os.path.exists(index_path):
+            return FileResponse(index_path)
+        
+        return {"error": "Not found"}
 

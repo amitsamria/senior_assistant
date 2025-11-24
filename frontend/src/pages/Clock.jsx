@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../api';
+import api from '../services/api';
 
 const Clock = () => {
     const [time, setTime] = useState(new Date());
@@ -68,31 +68,32 @@ const Clock = () => {
         <div className="min-h-[80vh] flex flex-col items-center justify-center text-center space-y-12 bg-background">
 
             {/* Time of Day */}
-            <h2 className="text-4xl md:text-5xl font-medium text-secondary">
+            {/* Time of Day */}
+            <h2 className="text-3xl md:text-5xl font-medium text-secondary">
                 Now it's <span className="text-primary font-bold">{getTimeOfDay()}</span>
             </h2>
 
             {/* Digital Clock */}
-            <div className="bg-surface px-16 py-12 rounded-[3rem] shadow-card border-4 border-primary">
-                <h1 className="text-8xl md:text-9xl font-bold text-textMain tracking-wider">
+            <div className="bg-surface px-8 md:px-16 py-8 md:py-12 rounded-[2rem] md:rounded-[3rem] shadow-card border-4 border-primary">
+                <h1 className="text-6xl md:text-9xl font-bold text-textMain tracking-wider">
                     {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </h1>
-                <p className="text-3xl md:text-4xl text-secondary mt-4 font-medium">
+                <p className="text-xl md:text-4xl text-secondary mt-2 md:mt-4 font-medium">
                     {formatDate(time)}
                 </p>
             </div>
 
             {/* Next Reminder */}
             {nextReminder && (
-                <div className="w-full max-w-2xl bg-orange-50 border-l-8 border-accent p-8 rounded-r-2xl shadow-md text-left animate-pulse">
-                    <p className="text-2xl text-orange-800 font-bold mb-2">UPCOMING REMINDER</p>
-                    <div className="flex justify-between items-end">
+                <div className="w-full max-w-2xl bg-orange-50 border-l-4 md:border-l-8 border-accent p-4 md:p-8 rounded-r-xl md:rounded-r-2xl shadow-md text-left animate-pulse">
+                    <p className="text-xl md:text-2xl text-orange-800 font-bold mb-2">UPCOMING REMINDER</p>
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-2 md:gap-0">
                         <div>
-                            <h3 className="text-4xl font-bold text-textMain">{nextReminder.title}</h3>
-                            <p className="text-2xl text-secondary">{nextReminder.detail}</p>
+                            <h3 className="text-2xl md:text-4xl font-bold text-textMain">{nextReminder.title}</h3>
+                            <p className="text-lg md:text-2xl text-secondary">{nextReminder.detail}</p>
                         </div>
-                        <div className="text-right">
-                            <span className="text-5xl font-bold text-primary">{nextReminder.time}</span>
+                        <div className="text-left md:text-right w-full md:w-auto">
+                            <span className="text-4xl md:text-5xl font-bold text-primary">{nextReminder.time}</span>
                         </div>
                     </div>
                 </div>

@@ -1,9 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends
+from pydantic import BaseModel
 from typing import List
 from sqlalchemy.orm import Session
 from database import get_db
 import db_models
-from models import MedicineReminder, Appointment, Contact, Recipe, GroceryItem, HealthInfo
+from models import MedicineReminder, Appointment, Contact, Recipe, GroceryItem, HealthInfo, UserLogin
 
 router = APIRouter()
 
@@ -53,6 +54,29 @@ def toggle_medicine(med_id: int, db: Session = Depends(get_db)):
     db.refresh(med)
     return med
 
+@router.delete("/medicines/{med_id}")
+def delete_medicine(med_id: int, db: Session = Depends(get_db)):
+    med = db.query(db_models.MedicineReminderDB).filter(db_models.MedicineReminderDB.id == med_id).first()
+    if not med:
+        raise HTTPException(status_code=404, detail="Medicine not found")
+    db.delete(med)
+    db.commit()
+    return {"message": "Medicine deleted"}
+
+@router.put("/medicines/{med_id}", response_model=MedicineReminder)
+def update_medicine(med_id: int, med: MedicineReminder, db: Session = Depends(get_db)):
+    db_med = db.query(db_models.MedicineReminderDB).filter(db_models.MedicineReminderDB.id == med_id).first()
+    if not db_med:
+        raise HTTPException(status_code=404, detail="Medicine not found")
+    
+    med_data = med.dict(exclude={'id'})
+    for key, value in med_data.items():
+        setattr(db_med, key, value)
+    
+    db.commit()
+    db.refresh(db_med)
+    return db_med
+
 # --- Appointments ---
 @router.get("/appointments", response_model=List[Appointment])
 def get_appointments(db: Session = Depends(get_db)):
@@ -67,6 +91,29 @@ def add_appointment(appt: Appointment, db: Session = Depends(get_db)):
     db.refresh(db_appt)
     return db_appt
 
+@router.delete("/appointments/{appt_id}")
+def delete_appointment(appt_id: int, db: Session = Depends(get_db)):
+    appt = db.query(db_models.AppointmentDB).filter(db_models.AppointmentDB.id == appt_id).first()
+    if not appt:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    db.delete(appt)
+    db.commit()
+    return {"message": "Appointment deleted"}
+
+@router.put("/appointments/{appt_id}", response_model=Appointment)
+def update_appointment(appt_id: int, appt: Appointment, db: Session = Depends(get_db)):
+    db_appt = db.query(db_models.AppointmentDB).filter(db_models.AppointmentDB.id == appt_id).first()
+    if not db_appt:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    appt_data = appt.dict(exclude={'id'})
+    for key, value in appt_data.items():
+        setattr(db_appt, key, value)
+    
+    db.commit()
+    db.refresh(db_appt)
+    return db_appt
+
 # --- Contacts ---
 @router.get("/contacts", response_model=List[Contact])
 def get_contacts(db: Session = Depends(get_db)):
@@ -77,6 +124,29 @@ def add_contact(contact: Contact, db: Session = Depends(get_db)):
     contact_data = contact.dict(exclude={'id'})
     db_contact = db_models.ContactDB(**contact_data)
     db.add(db_contact)
+    db.commit()
+    db.refresh(db_contact)
+    return db_contact
+
+@router.delete("/contacts/{contact_id}")
+def delete_contact(contact_id: int, db: Session = Depends(get_db)):
+    contact = db.query(db_models.ContactDB).filter(db_models.ContactDB.id == contact_id).first()
+    if not contact:
+        raise HTTPException(status_code=404, detail="Contact not found")
+    db.delete(contact)
+    db.commit()
+    return {"message": "Contact deleted"}
+
+@router.put("/contacts/{contact_id}", response_model=Contact)
+def update_contact(contact_id: int, contact: Contact, db: Session = Depends(get_db)):
+    db_contact = db.query(db_models.ContactDB).filter(db_models.ContactDB.id == contact_id).first()
+    if not db_contact:
+        raise HTTPException(status_code=404, detail="Contact not found")
+    
+    contact_data = contact.dict(exclude={'id'})
+    for key, value in contact_data.items():
+        setattr(db_contact, key, value)
+    
     db.commit()
     db.refresh(db_contact)
     return db_contact
@@ -110,6 +180,29 @@ def toggle_grocery(item_id: int, db: Session = Depends(get_db)):
     db.refresh(item)
     return item
 
+@router.delete("/groceries/{item_id}")
+def delete_grocery(item_id: int, db: Session = Depends(get_db)):
+    item = db.query(db_models.GroceryItemDB).filter(db_models.GroceryItemDB.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    db.delete(item)
+    db.commit()
+    return {"message": "Item deleted"}
+
+@router.put("/groceries/{item_id}", response_model=GroceryItem)
+def update_grocery(item_id: int, item: GroceryItem, db: Session = Depends(get_db)):
+    db_item = db.query(db_models.GroceryItemDB).filter(db_models.GroceryItemDB.id == item_id).first()
+    if not db_item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    item_data = item.dict(exclude={'id'})
+    for key, value in item_data.items():
+        setattr(db_item, key, value)
+    
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
 # --- Health Info ---
 @router.get("/health", response_model=HealthInfo)
 def get_health_info(db: Session = Depends(get_db)):
@@ -128,4 +221,134 @@ def get_health_info(db: Session = Depends(get_db)):
         db.refresh(default_info)
         return default_info
     return info
+
+@router.put("/health", response_model=HealthInfo)
+def update_health_info(info: HealthInfo, db: Session = Depends(get_db)):
+    db_info = db.query(db_models.HealthInfoDB).first()
+    if not db_info:
+        # Should not happen if get_health_info creates default, but for safety
+        db_info = db_models.HealthInfoDB(**info.dict())
+        db.add(db_info)
+    else:
+        info_data = info.dict()
+        for key, value in info_data.items():
+            setattr(db_info, key, value)
+    
+    db.commit()
+    db.refresh(db_info)
+    return db_info
+
+# --- Cognitive Scores ---
+class CognitiveScore(BaseModel):
+    id: int
+    date: str
+    score: int
+    total_attempts: int
+    game_type: str
+
+    class Config:
+        orm_mode = True
+
+@router.get("/scores", response_model=List[CognitiveScore])
+def get_scores(db: Session = Depends(get_db)):
+    return db.query(db_models.CognitiveScoreDB).all()
+
+@router.post("/scores", response_model=CognitiveScore)
+def add_score(score: CognitiveScore, db: Session = Depends(get_db)):
+    score_data = score.dict(exclude={'id'})
+    db_score = db_models.CognitiveScoreDB(**score_data)
+    db.add(db_score)
+    db.commit()
+    db.refresh(db_score)
+    return db_score
+
+@router.delete("/scores/{score_id}")
+def delete_score(score_id: int, db: Session = Depends(get_db)):
+    score = db.query(db_models.CognitiveScoreDB).filter(db_models.CognitiveScoreDB.id == score_id).first()
+    if not score:
+        raise HTTPException(status_code=404, detail="Score not found")
+    db.delete(score)
+    db.commit()
+    return {"message": "Score deleted"}
+
+@router.put("/scores/{score_id}", response_model=CognitiveScore)
+def update_score(score_id: int, score: CognitiveScore, db: Session = Depends(get_db)):
+    db_score = db.query(db_models.CognitiveScoreDB).filter(db_models.CognitiveScoreDB.id == score_id).first()
+    if not db_score:
+        raise HTTPException(status_code=404, detail="Score not found")
+    
+    score_data = score.dict(exclude={'id'})
+    for key, value in score_data.items():
+        setattr(db_score, key, value)
+    
+    db.commit()
+    db.refresh(db_score)
+    return db_score
+
+@router.get("/adherence")
+def get_adherence(db: Session = Depends(get_db)):
+    # Calculate medicine adherence
+    medicines = db.query(db_models.MedicineReminderDB).all()
+    total_meds = len(medicines)
+    taken_meds = len([m for m in medicines if m.taken])
+    
+    med_adherence = 0
+    if total_meds > 0:
+        med_adherence = int((taken_meds / total_meds) * 100)
+        
+    return {"medicine_adherence": med_adherence}
+
+@router.post("/auth/login")
+def auth_login(user_data: UserLogin, db: Session = Depends(get_db)):
+    # Simple check for demo purposes
+    # In real app, hash passwords!
+    user = db.query(db_models.UserDB).filter(db_models.UserDB.username == user_data.username).first()
+    
+    if not user:
+        # Seed default user if none exists
+        if db.query(db_models.UserDB).count() == 0:
+            default_user = db_models.UserDB(username="admin", password_hash="password")
+            db.add(default_user)
+            db.commit()
+            db.refresh(default_user)
+            user = default_user
+        else:
+             raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    if user.username == user_data.username and user.password_hash == user_data.password:
+        return {"token": "fake-jwt-token", "username": user.username}
+    
+    raise HTTPException(status_code=401, detail="Invalid credentials")
+
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
+class GoogleAuth(BaseModel):
+    token: str
+
+@router.post("/auth/google")
+def google_login(auth_data: GoogleAuth, db: Session = Depends(get_db)):
+    try:
+        # Verify the token
+        idinfo = id_token.verify_oauth2_token(
+            auth_data.token, 
+            requests.Request(), 
+            "509159482066-6jj5r7hgimlltbdpum2m73aduqguum0f.apps.googleusercontent.com"
+        )
+
+        # Get user info
+        email = idinfo['email']
+        
+        # Find or create user
+        user = db.query(db_models.UserDB).filter(db_models.UserDB.username == email).first()
+        if not user:
+            user = db_models.UserDB(username=email, password_hash="google-oauth")
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+
+        return {"token": "fake-jwt-token", "username": user.username}
+
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Invalid Google Token")
 
